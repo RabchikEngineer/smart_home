@@ -1,3 +1,4 @@
+import random
 OUT = "OUT"
 IN = "IN"
 BCM = "BCM"
@@ -6,6 +7,10 @@ BOARD = "BOARD "
 
 def output(*args):
     print(f'set {args[1]} to {args[0]} pin')
+
+
+def input(*args):
+    return random.random()
 
 
 def setmode(*args):
