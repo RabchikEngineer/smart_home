@@ -42,7 +42,7 @@ def output():
 def output():
     # print(request.json)
     data = request.json
-    return GP.input(data['pin'])
+    return str(GP.input(data['pin']))
 
 
 @app.post('/clear')
