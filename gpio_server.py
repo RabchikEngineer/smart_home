@@ -103,7 +103,7 @@ def handler():
     data = request.json
     if data.get('auto'):
         pinset.auto_config(data['pin'],GP.OUT)
-    pinset.output(data['pin'], data['value'])
+    pinset.output(data['pin'], data['level'])
 
 
 @app.get('/input')
