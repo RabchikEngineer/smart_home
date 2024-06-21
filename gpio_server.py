@@ -101,7 +101,7 @@ def handler():
 @app.post('/output')
 def handler():
     data = request.json
-    if data['auto']:
+    if data.get('auto'):
         pinset.auto_config(data['pin'],GP.OUT)
     pinset.output(data['pin'], data['value'])
 
@@ -109,7 +109,7 @@ def handler():
 @app.get('/input')
 def handler():
     data = request.json
-    if data['auto']:
+    if data.get('auto'):
         pinset.auto_config(data['pin'], GP.IN)
     return json.dumps({"level":pinset.input(data['pin'])})
 
