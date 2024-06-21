@@ -59,7 +59,7 @@ class Pin:
             self.setup(mode)
 
     def setup(self,mode=None):
-        if mode is not None:
+        if mode is None:
             mode=self.mode
         GP.setup(self.n, mode)
         self.mode=mode
