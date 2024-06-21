@@ -30,7 +30,7 @@ class PinSet:
     def check(self,n,mode=None):
         if not GP.getmode(): return "setmode"
         if not self.pins.get(n): return "create"
-        if mode and self.pins[n].mode != mode: return "setup"
+        if (mode is not None) and self.pins[n].mode != mode: return "setup"
         return True
 
     def auto_config(self,n,mode):
@@ -59,7 +59,9 @@ class Pin:
             self.setup(mode)
 
     def setup(self,mode=None):
-        GP.setup(self.n, mode or self.mode)
+        if mode is not None:
+            mode=self.mode
+        GP.setup(self.n, mode)
 
     def output(self, value):
         GP.output(self.n, value)
