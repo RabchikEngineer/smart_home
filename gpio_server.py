@@ -54,7 +54,7 @@ class Pin:
 
     def __init__(self, n, mode=None):
         self.n = n
-        if mode:
+        if mode is not None:
             self.mode = mode
             self.setup(mode)
 
@@ -66,10 +66,6 @@ class Pin:
 
     def input(self):
         return GP.input(self.n)
-
-
-
-
 
 
 def internal_error_handler(error):
