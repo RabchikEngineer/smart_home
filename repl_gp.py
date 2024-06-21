@@ -16,6 +16,8 @@ def input(*args):
 def setmode(*args):
     print(f'set mode to {args[0]}')
 
+def getmode():
+    return random.randint(10,11)
 
 def setup(*args):
     print(f'set {args[1]} mode to {args[0]} pin')
