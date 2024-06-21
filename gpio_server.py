@@ -62,6 +62,7 @@ class Pin:
         if mode is not None:
             mode=self.mode
         GP.setup(self.n, mode)
+        self.mode=mode
 
     def output(self, value):
         GP.output(self.n, value)
