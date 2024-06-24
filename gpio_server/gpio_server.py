@@ -17,8 +17,8 @@ class Pin:
 
     def __init__(self, n, mode=None):
         self.n = n
+        self.mode = mode
         if mode is not None:
-            self.mode = mode
             self.setup(mode)
 
     def setup(self,mode=None):
