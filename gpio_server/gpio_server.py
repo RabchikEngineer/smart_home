@@ -11,46 +11,9 @@ else:
     import repl_gp as GP
 
 
-class PinSet:
-
-    pins={}
-    mode=None
-
-    def __init__(self):
-        pass
-
-    def setmode(self,mode=GP.BCM):
-        GP.setmode(mode)
-        self.mode = mode
-
-    def add_pin(self, pin):
-        self.pins.update({pin.n:pin})
-        return pin
-
-    def check(self,n,mode=None):
-        if not GP.getmode(): return "setmode"
-        if not self.pins.get(n): return "create"
-        if (mode is not None) and self.pins[n].mode != mode: return "setup"
-        return True
-
-    def auto_config(self,n,mode):
-        while self.check(n,mode) != True:
-            match self.check(n,mode):
-                case "setmode":
-                    self.setmode()
-                case "create":
-                    self.add_pin(Pin(n,mode))
-                case "setup":
-                    self.pins[n].setup(mode)
-
-    def output(self,n,value):
-        self.pins[n].output(value)
-
-    def input(self,n):
-        return self.pins[n].input()
-
-
 class Pin:
+
+    level=0
 
     def __init__(self, n, mode=None):
         self.n = n
@@ -64,11 +27,54 @@ class Pin:
         GP.setup(self.n, mode)
         self.mode=mode
 
-    def output(self, value):
-        GP.output(self.n, value)
+    def output(self, level):
+        GP.output(self.n, level)
+        self.level=level
 
-    def input(self):
+    def input(self) -> float:
         return GP.input(self.n)
+
+
+class PinSet:
+
+    pins : dict[int,Pin] = {}
+    mode=None
+
+    def __init__(self):
+        pass
+
+    def setmode(self,mode=GP.BCM):
+        GP.setmode(mode)
+        self.mode = mode
+
+    def add_pin(self, pin) -> Pin:
+        self.pins.update({pin.n:pin})
+        return pin
+
+    def check(self,n,mode=None) -> str|bool:
+        if not GP.getmode(): return "setmode"
+        if not self.pins.get(n): return "create"
+        if (mode is not None) and self.pins[n].mode != mode: return "setup"
+        return True
+
+    def auto_config(self,n,mode=None):
+        while self.check(n,mode) != True:
+            match self.check(n,mode):
+                case "setmode":
+                    self.setmode()
+                case "create":
+                    self.add_pin(Pin(n,mode))
+                case "setup":
+                    self.pins[n].setup(mode)
+
+    def output(self,n,level):
+        self.pins[n].output(level)
+
+    def input(self,n: int):
+        return self.pins[n].input()
+
+    def get_pin(self,n: int):
+        return self.pins[n]
 
 
 def internal_error_handler(error):
@@ -86,19 +92,19 @@ pinset=PinSet()
 
 
 @app.post('/setmode')
-def handler():
+def setmode():
     data = request.json
     pinset.setmode(data['mode'])
 
 
 @app.post('/setup')
-def handler():
+def setup():
     data=request.json
     pinset.auto_config(data['pin'],getattr(GP,data['mode'].upper()))
 
 
 @app.post('/output')
-def handler():
+def output():
     data = request.json
     if data.get('auto'):
         pinset.auto_config(data['pin'],GP.OUT)
@@ -106,11 +112,20 @@ def handler():
 
 
 @app.get('/input')
-def handler():
+def inp():
     data = request.json
     if data.get('auto'):
         pinset.auto_config(data['pin'], GP.IN)
     return json.dumps({"level":pinset.input(data['pin'])})
+
+
+@app.get('/status')
+def status():
+    data = request.json
+    if data.get('auto'):
+        pinset.auto_config(data['pin'])
+    pin=pinset.get_pin(data['pin'])
+    return json.dumps({"mode":pin.mode,'level':pin.level})
 
 
 @app.post('/clear')
