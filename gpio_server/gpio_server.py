@@ -78,15 +78,11 @@ class PinSet:
 
 
 def internal_error_handler(error):
-    # print(error)
-    # print(dir(error))
-    # print(error.body)
-    response.content_type="application/json"
     return json.dumps({"error":error.args[2].__repr__(),"traceback":error.traceback})
 
 app=Bottle()
 app.error_handler={500: internal_error_handler}
-
+response.default_content_type="application/json"
 
 pinset=PinSet()
 
