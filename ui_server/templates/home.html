@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link href="{{ url_for('static', path='/style.css') }}" rel="stylesheet">
+</head>
+<body class="body">
+    <div class="header_wrapper">
+        <div class="header">
+            <p>Something</p>
+        </div>
+    </div>
+    <div class="main_wrapper">
+        <div class="main">
+            <div class="devices">
+                {% for dev in devices.values() %}
+                    <div class="device" {% if dev.level==1 %} style="background: #056964" {% endif %}
+                         onclick="toggle({{dev.pin}})" id="device{{ dev.pin }}">
+                        <p>{{dev.name}}</p>
+{#                        <p>{{dev.level}}</p>#}
+                        <img src="{{url_for('static', path='/img/'+dev.image)}}" alt="img" class="device_img">
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+
+    let disabled_color=''
+    let enabled_color="#056964"
+
+    async function load() {
+        disabled_color=document.querySelector('.body').background
+    }
+
+    async function toggle(pin){
+        console.log(pin)
+        let res= await fetch("{{url_for('toggle_device')}}",{
+            method: 'PUT',
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({pin: pin})
+        }).then((response) => {return response.json()})
+        let device=document.getElementById('device'+pin)
+        if (res.level) {
+            device.style.background = enabled_color
+        } else {
+            device.style.background = disabled_color
+        }
+        console.log(res)
+    }
+
+    load()
+
+</script>
+</html>
