@@ -1,9 +1,10 @@
 import os
-from bottle import route,run, Bottle,request,static_file,response
-import json,random
+from bottle import route, run, Bottle, request, static_file, response
+import json, random
 
-from gevent import monkey; monkey.patch_all()
+from gevent import monkey;
 
+monkey.patch_all()
 
 if os.environ.get('GPIO_AVAILABLE'):
     import RPi.GPIO as GP
@@ -12,79 +13,83 @@ else:
 
 
 class Pin:
+    level = 0
 
-    level=0
-
+    # init and setup of the pin, if mode given
     def __init__(self, n, mode=None):
         self.n = n
         self.mode = mode
         if mode is not None:
             self.setup(mode)
 
-    def setup(self,mode=None):
+    # setup pin on given mode, if not given, takes from Pin object
+    def setup(self, mode=None):
         if mode is None:
-            mode=self.mode
+            mode = self.mode
         GP.setup(self.n, mode)
-        self.mode=mode
+        self.mode = mode
 
     def output(self, level):
         GP.output(self.n, level)
-        self.level=level
+        self.level = level
 
     def input(self) -> float:
         return GP.input(self.n)
 
 
 class PinSet:
-
-    pins : dict[int,Pin] = {}
-    mode=None
+    pins: dict[int, Pin] = {}
+    mode = None
 
     def __init__(self):
         pass
 
-    def setmode(self,mode=GP.BCM):
+    def setmode(self, mode=GP.BCM):
         GP.setmode(mode)
         self.mode = mode
 
+    # add pin to dict of pins
     def add_pin(self, pin) -> Pin:
-        self.pins.update({pin.n:pin})
+        self.pins.update({pin.n: pin})
         return pin
 
-    def check(self,n,mode=None) -> str|bool:
+    # check, is pin ready to be operated
+    def check(self, n, mode=None) -> str | bool:
         if not GP.getmode(): return "setmode"
         if not self.pins.get(n): return "create"
         if (mode is not None) and self.pins[n].mode != mode: return "setup"
         return True
 
-    def auto_config(self,n,mode=None):
-        while self.check(n,mode) != True:
-            match self.check(n,mode):
+    # configure pins
+    def auto_config(self, n, mode=None):
+        while self.check(n, mode) != True:
+            match self.check(n, mode):
                 case "setmode":
                     self.setmode()
                 case "create":
-                    self.add_pin(Pin(n,mode))
+                    self.add_pin(Pin(n, mode))
                 case "setup":
                     self.pins[n].setup(mode)
 
-    def output(self,n,level):
+    def output(self, n, level):
         self.pins[n].output(level)
 
-    def input(self,n: int):
+    def input(self, n: int):
         return self.pins[n].input()
 
-    def get_pin(self,n: int):
+    def get_pin(self, n: int):
         return self.pins[n]
 
 
 def internal_error_handler(error):
-    return json.dumps({"error":error.args[2].__repr__(),"traceback":error.traceback})
+    return json.dumps({"error": error.args[2].__repr__(), "traceback": error.traceback})
 
-app=Bottle()
-app.error_handler={500: internal_error_handler}
-response.default_content_type="application/json"
 
-pinset=PinSet()
+app = Bottle()
+app.error_handler.update({500: internal_error_handler})
+response.default_content_type = "application/json"
+
+pinset = PinSet()
 
 
 @app.post('/setmode')
@@ -95,15 +100,15 @@ def setmode():
 
 @app.post('/setup')
 def setup():
-    data=request.json
-    pinset.auto_config(data['pin'],getattr(GP,data['mode'].upper()))
+    data = request.json
+    pinset.auto_config(data['pin'], getattr(GP, data['mode'].upper()))
 
 
 @app.post('/output')
 def output():
     data = request.json
     if data.get('auto'):
-        pinset.auto_config(data['pin'],GP.OUT)
+        pinset.auto_config(data['pin'], GP.OUT)
     pinset.output(data['pin'], data['level'])
 
 
@@ -112,7 +117,7 @@ def inp():
     data = request.json
     if data.get('auto'):
         pinset.auto_config(data['pin'], GP.IN)
-    return json.dumps({"level":pinset.input(data['pin'])})
+    return json.dumps({"level": pinset.input(data['pin'])})
 
 
 @app.get('/status')
@@ -120,8 +125,8 @@ def status():
     data = request.json
     if data.get('auto'):
         pinset.auto_config(data['pin'])
-    pin=pinset.get_pin(data['pin'])
-    return json.dumps({"mode":pin.mode,'level':pin.level})
+    pin = pinset.get_pin(data['pin'])
+    return json.dumps({"mode": pin.mode, 'level': pin.level})
 
 
 @app.post('/clear')
@@ -133,11 +138,7 @@ def handler():
         GP.cleanup()
 
 
-
 with open("config.json", encoding='utf-8') as f:
-    config=json.load(f)
+    config = json.load(f)
 
-
-run(app,host=config['host'], port=config['port'], debug=config['debug'], server='gevent')
-
-
+run(app, host=config['host'], port=config['port'], debug=config['debug'], server='gevent')

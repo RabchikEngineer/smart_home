@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='/img/favicon.ico') }}">
+</head>
+<body>
+
+    <form method="POST"  action="/login">
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="username"><br>
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password"><br><br>
+        <input type="submit" value="Submit">
+        <p style="color:#ff0000">{{ error }}</p>
+    </form>
+
+{#    <input type="text" name="username" id="username">#}
+{#    <input type="text" name="password" id="password">#}
+{#    <button onclick="submit()">Login</button>#}
+</body>
+<script>
+
+    {#async function submit() {#}
+    {#    let form = new FormData()#}
+    {#    form.append("username", document.getElementById("username").value)#}
+    {#    form.append("password", document.getElementById("password").value)#}
+    {#    console.log(form.values())#}
+    {##}
+    {#    let response = await fetch("{{url_for('login_for_access_token')}}", {#}
+    {#        method: 'POST',#}
+    {#        headers: {"Content-Type": "multipart/form-data"},#}
+    {#        body: form#}
+    {#    })#}
+    {##}
+    {#    if (response.status!==200) {#}
+    {##}
+    {#        console.log(await response.json())#}
+    {##}
+    {#    } else {#}
+    {#        console.log('succesfully logged in')#}
+    {#    }#}
+    {#}#}
+
+</script>
+</html>

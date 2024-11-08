@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='/img/favicon.ico') }}">
     <link href="{{ url_for('static', path='/style.css') }}" rel="stylesheet">
 </head>
 <body class="body">
@@ -37,9 +38,11 @@
 
     async function toggle(pin){
         console.log(pin)
+        {#let auth_token=get_auth_token()#}
+        {#console.log(auth_token)#}
         let res= await fetch("{{url_for('toggle_device')}}",{
             method: 'PUT',
-            headers: {"Content-Type": "application/json"},
+            headers: {"Content-Type": "application/json"}, // "Authorization":auth_token
             body: JSON.stringify({pin: pin})
         }).then((response) => {return response.json()})
         let device=document.getElementById('device'+pin)
@@ -49,6 +52,17 @@
             device.style.background = disabled_color
         }
         console.log(res)
+    }
+
+    function get_auth_token(){
+        console.log(document.cookie.split('; '))
+        let row=document.cookie.split('; ').find(row => row.startsWith('auth-token'))
+        if (row){
+            return row.split('=')[1]
+            {#return row#}
+        } else {
+            return undefined
+        }
     }
 
     load()
