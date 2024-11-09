@@ -1,8 +1,15 @@
 import json
-
 import requests
 
+from fastapi import HTTPException
+
 from dependencies import config
+
+
+class GpioServerError(HTTPException):
+    def __init__(self, status_code,detail):
+        # super().__init__(418, detail)
+        super().__init__(status_code, detail)
 
 
 class Device:
@@ -19,29 +26,27 @@ class Device:
         self.image = image
         self.update()
 
-    def toggle(self):
-        level=1-self.level
-        res=requests.post(self.server_url+'output',json={'pin':self.pin, 'level':level, 'auto':1})
-        if res.status_code==requests.codes.OK:
-            self.level = level
-            return level
+    def request_server(self, method, url, json):
+        res = requests.request(method=method, url=self.server_url + url, json=json)
+        if res.status_code != requests.codes.OK:
+            raise GpioServerError(status_code=res.status_code, detail=res.text)
         return res
 
-    def set(self,level):
-        res = requests.post(self.server_url + 'output', json={'pin': self.pin, 'level': level, 'auto': 1})
-        if res.status_code == requests.codes.OK:
-            self.level = level
-            return level
-        return res
+    def toggle(self):
+        level = 1 - self.level
+        res = self.request_server('post','output', json={'pin': self.pin, 'level': level, 'auto': 1})
+        self.level = level
+        return level
+
+    def set(self, level):
+        res = self.request_server('post','output', json={'pin': self.pin, 'level': level, 'auto': 1})
+        self.level = level
+        return level
 
     def update(self):
-        self.level=self.status()['level']
+        status = self.status()
+        self.level = status['level']
 
     def status(self):
-        res=requests.get(self.server_url+'status',json={'pin':self.pin,'auto':1})
-        if res.status_code==requests.codes.OK:
-            return res.json()
-        return res
-
-
-
+        res = self.request_server('get','status', json={'pin': self.pin, 'auto': 1})
+        return res.json()

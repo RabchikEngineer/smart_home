@@ -43,8 +43,14 @@
         let res= await fetch("{{url_for('toggle_device')}}",{
             method: 'PUT',
             headers: {"Content-Type": "application/json"}, // "Authorization":auth_token
-            body: JSON.stringify({pin: pin})
-        }).then((response) => {return response.json()})
+            body: JSON.stringify({pin: pin}),
+        }).then((response) => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            }
+            return response.json()
+        })
+
         let device=document.getElementById('device'+pin)
         if (res.level) {
             device.style.background = enabled_color
@@ -54,16 +60,16 @@
         console.log(res)
     }
 
-    function get_auth_token(){
-        console.log(document.cookie.split('; '))
-        let row=document.cookie.split('; ').find(row => row.startsWith('auth-token'))
-        if (row){
-            return row.split('=')[1]
+    {#function get_auth_token(){#}
+    {#    console.log(document.cookie.split('; '))#}
+    {#    let row=document.cookie.split('; ').find(row => row.startsWith('auth-token'))#}
+    {#    if (row){#}
+    {#        return row.split('=')[1]#}
             {#return row#}
-        } else {
-            return undefined
-        }
-    }
+    {#    } else {#}
+    {#        return undefined#}
+    {#    }#}
+    {#}#}
 
     load()
 

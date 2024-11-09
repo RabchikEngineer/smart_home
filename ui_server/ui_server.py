@@ -8,7 +8,7 @@ from fastapi_login.exceptions import InvalidCredentialsException
 from datetime import timedelta
 
 from models import Item, ToggleDeviceRequest, StatusDeviceRequest, SetDeviceRequest
-from devices import Device
+from devices import Device, GpioServerError
 from auth import load_user, manager, NotAuthenticatedException
 from dependencies import config
 
@@ -17,11 +17,11 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-def exc_handler(request, exc):
+def noauth_handler(request, exc):
     return RedirectResponse(url='/login')
 
 
-app.add_exception_handler(NotAuthenticatedException, exc_handler)
+app.add_exception_handler(NotAuthenticatedException, noauth_handler)
 
 templates = Jinja2Templates(directory="templates")
 
@@ -45,7 +45,7 @@ def set_device(data: SetDeviceRequest, user=Depends(manager)):
 
 @app.put("/device")
 def toggle_device(data: ToggleDeviceRequest, user=Depends(manager)):
-    print(user)
+    # print(user)
     res = devices.get(data.pin).toggle()
     if not isinstance(res, int):
         raise HTTPException(status_code=418, detail=res.text)
@@ -61,7 +61,7 @@ def get_device_status(data: StatusDeviceRequest, user=Depends(manager)):
 
 
 @app.get("/users/me")
-async def read_users_me(current_user=Depends(manager)):
+async def users_me(current_user=Depends(manager)):
     return current_user
 
 
