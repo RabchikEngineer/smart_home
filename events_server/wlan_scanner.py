@@ -20,10 +20,10 @@ logger.add("log.txt", level=2, format=log_format)
 logger.add(sys.stdout, level=10, format=log_format)
 
 devices_states: dict[str:list[int, int]] = {}
-status_quantity = config['wlan_watchdog']['status_quantity']
-status_threshold = config['wlan_watchdog']['status_threshold']
+status_quantity = config['wlan_scanner']['status_quantity']
+status_threshold = config['wlan_scanner']['status_threshold']
 status_list = []
-server_url = f'http://{config['events']['server_ip']}:{config['events']['port']}/add'
+server_url = f'http://{config["events"]["server_ip"]}:{config["events"]["port"]}/add'
 
 
 def parse_nmap_output(output):
@@ -110,7 +110,7 @@ def ping_daemon():
             else:
                 stable_state = devices_states[mac][1]
 
-            if config['wlan_watchdog']['debug']:
+            if config['wlan_scanner']['debug']:
                 logger.debug(f'device {mac} is now {current_state} with {connected_ratio} ratio')
 
             if stable_state != devices_states[mac][1]:
@@ -126,11 +126,11 @@ def ping_daemon():
                                      })
                     logger.info(f'device {name} performs {action}')
                 except:
-                    logger.error(f'error during request about {devices['device_matching'][mac]}')
+                    logger.error(f'error during request about {devices["device_matching"][mac]}')
 
             devices_states.update({mac: [states, stable_state, time.time()]})
 
-        time.sleep(config['wlan_watchdog']['interval'])
+        time.sleep(config['wlan_scanner']['interval'])
 
 
 
