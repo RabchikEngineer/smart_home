@@ -115,7 +115,7 @@ def ping_daemon():
 
             if stable_state != devices_states[mac][1]:
                 name = devices['device_matching'][mac].get("name") or devices['device_matching'][mac]["ip"]
-                action = f'device_{'dis' if stable_state == 0 else ''}connected'
+                action = f'device_{"dis" if stable_state == 0 else ""}connected'
                 try:
                     requests.request(method='POST', url=server_url,
                                      json={
