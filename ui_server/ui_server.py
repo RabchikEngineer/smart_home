@@ -81,7 +81,7 @@ def login(request: Request, data: OAuth2PasswordRequestForm = Depends()):
         # raise InvalidCredentialsException
 
     token = manager.create_access_token(data={'sub': username},
-                                        expires=timedelta(minutes=config['jwt_expiration_time']))
+                                        expires=timedelta(minutes=config['ui']['jwt_expiration_time']))
     response = RedirectResponse(url="/", status_code=302)
     # manager.set_cookie(response, token)  # uses httponly flag
     response.set_cookie(key=manager.cookie_name, value=token)

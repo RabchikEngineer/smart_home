@@ -161,7 +161,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 /test.py
-/ui_server/config.json
 /ui_server/static/img/
 /ui_server/users.json
-/gpio_server/config.json
+/events_server/events.json
+/events_server/event_handlers/*
+/events_server/network_devices.json
+/config.json

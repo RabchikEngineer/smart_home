@@ -1,15 +1,21 @@
-import os
-from bottle import route, run, Bottle, request, static_file, response
+import os, sys
 import json, random
 
-from gevent import monkey;
+from loguru import logger
 
-monkey.patch_all()
+from bottle import route, run, Bottle, request, static_file, response
+from gevent import monkey;
 
 if os.environ.get('GPIO_AVAILABLE'):
     import RPi.GPIO as GP
 else:
     import repl_gp as GP
+
+monkey.patch_all()
+
+
+with open("../config.json", encoding='utf-8') as f:
+    config = json.load(f)
 
 
 class Pin:
@@ -47,6 +53,7 @@ class PinSet:
     def setmode(self, mode=GP.BCM):
         GP.setmode(mode)
         self.mode = mode
+        logger.info(f'Set pinset mode {mode}')
 
     # add pin to dict of pins
     def add_pin(self, pin) -> Pin:
@@ -63,6 +70,7 @@ class PinSet:
     # configure pins
     def auto_config(self, n, mode=None):
         while self.check(n, mode) != True:
+            logger.info(f'Auto-configured {n} pin to {mode}')
             match self.check(n, mode):
                 case "setmode":
                     self.setmode()
@@ -71,19 +79,29 @@ class PinSet:
                 case "setup":
                     self.pins[n].setup(mode)
 
+
     def output(self, n, level):
         self.pins[n].output(level)
+        logger.success(f'Set output level to {level} on {n} pin')
 
     def input(self, n: int):
+        logger.success(f'Get input level to {level} on {n} pin')
         return self.pins[n].input()
+
 
     def get_pin(self, n: int):
         return self.pins[n]
 
 
 def internal_error_handler(error):
+    logger.error({"error": error.args[2].__repr__(), "traceback": error.traceback})
     return json.dumps({"error": error.args[2].__repr__(), "traceback": error.traceback})
 
+
+log_format = '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {message}'
+logger.remove()
+logger.add("log.txt", level=2, format=log_format)
+logger.add(sys.stdout, level=10, format=log_format)
 
 app = Bottle()
 app.error_handler.update({500: internal_error_handler})
@@ -138,7 +156,5 @@ def handler():
         GP.cleanup()
 
 
-with open("config.json", encoding='utf-8') as f:
-    config = json.load(f)
 
-run(app, host=config['host'], port=config['port'], debug=config['debug'], server='gevent')
+run(app, host=config['gpio']['host'], port=config['gpio']['port'], debug=config['gpio']['debug'], server='gevent')
