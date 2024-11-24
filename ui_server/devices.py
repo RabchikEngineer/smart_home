@@ -17,7 +17,7 @@ class Device:
     pin: int
     name: str
     level: int
-    server_url = f'http://{config["gpio_server_ip"]}:{config["gpio_server_port"]}/'
+    server_url = f'http://{config["gpio"]["server_ip"]}:{config["gpio"]["port"]}/'
 
     def __init__(self, pin, name="", image=None):
         self.pin = pin
